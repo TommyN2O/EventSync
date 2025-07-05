@@ -63,5 +63,5 @@ GET /api/events/{eventId}/summary
 
 The application uses the Hugging Face API for sentiment analysis:
 
-- **Model**: `cardiffnlp/twitter-roberta-base-sentiment-latest`
+- **Model**: `nlptown/bert-base-multilingual-uncased-sentiment`
 - **Sentiment Categories**: POSITIVE, NEUTRAL, NEGATIVE
