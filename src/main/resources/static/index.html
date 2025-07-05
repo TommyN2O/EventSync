@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventSync - Event Management with Sentiment Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background-color: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background-color: #667eea;
+            border-color: #667eea;
+        }
+        
+        .btn-primary:hover {
+            background-color: #5a6fd8;
+        }
+        
+        .nav-buttons a {
+            color: white;
+            text-decoration: none;
+            font-weight: normal;
+        }
+        
+        .nav-buttons a:hover {
+            text-decoration: underline;
+        }
+        
+        .mobile-menu-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .mobile-menu-toggle span {
+            width: 25px;
+            height: 3px;
+            background-color: white;
+            margin: 3px 0;
+            transition: 0.3s;
+        }
+        
+        .mobile-menu {
+            display: none;
+            background: rgba(102, 126, 234, 0.95);
+            padding: 1rem 0;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu {
+                position: fixed;
+                top: 65px;
+                left: 0;
+                right: 0;
+                background: rgba(102, 126, 234, 0.8);
+                border-radius: 0 0 10px 10px;
+                backdrop-filter: blur(15px);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+        }
+        
+        .mobile-menu a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 0.8rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            transition: background-color 0.3s;
+            font-weight: 500;
+        }
+        
+        .mobile-menu a:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .mobile-menu a:last-child {
+            border-bottom: none;
+        }
+        
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 20px;
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .event-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .event-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+        }
+        
+        .event-content {
+            padding: 1.5rem;
+        }
+        
+        .event-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .event-description {
+            color: #7f8c8d;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+        
+        .event-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.9rem;
+        }
+        
+        .form-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        
+        .result {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 1rem;
+            margin-top: 1rem;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #7f8c8d;
+        }
+        
+        h2 {
+            margin-bottom: 1.5rem;
+        }
+        
+        h3 {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Summary page styles */
+        .summary-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            margin-top: 1rem;
+        }
+
+        .events-list {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .event-item {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .event-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .event-item.active {
+            background-color: #667eea;
+            color: white;
+        }
+
+        .event-item.active .event-item-title,
+        .event-item.active .event-item-date {
+            color: white;
+        }
+
+        .event-item:last-child {
+            border-bottom: none;
+        }
+
+        .event-item-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-item-date {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        .summary-graph {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+
+        .sentiment-chart {
+            width: 100%;
+            height: 400px;
+            margin-top: 1rem;
+        }
+
+        .sentiment-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .sentiment-counts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .count-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .count-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .count-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .positive { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
+        .negative { background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%); }
+        .neutral { background: linear-gradient(135deg, #6c757d 0%, #495057 100%); }
+        
+        @media (max-width: 768px) {
+            .events-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .header-content {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .nav-buttons {
+                display: none;
+            }
+            
+            .mobile-menu-toggle {
+                display: flex;
+            }
+            
+            .mobile-menu.active {
+                display: block;
+            }
+            
+            .main-content {
+                padding: 1rem 15px;
+            }
+            
+            .form-container {
+                margin: 0 15px;
+                padding: 1.5rem;
+            }
+            
+            .event-card {
+                margin-bottom: 1rem;
+            }
+            
+            .event-image {
+                height: 150px;
+            }
+            
+            .event-content {
+                padding: 1rem;
+            }
+            
+            .event-title {
+                font-size: 1.1rem;
+            }
+            
+            .logo {
+                font-size: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
+
+            .summary-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .sentiment-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .sentiment-counts {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 0.5rem 10px;
+            }
+            
+            .form-container {
+                margin: 0 10px;
+                padding: 1rem;
+            }
+            
+            .header-content {
+                padding: 0 15px;
+            }
+            
+            .nav-buttons {
+                gap: 0.5rem;
+            }
+            
+            .btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.9rem;
+            }
+            
+            .event-image {
+                height: 120px;
+            }
+            
+            .event-content {
+                padding: 0.8rem;
+            }
+            
+            .event-title {
+                font-size: 1rem;
+            }
+            
+            .event-description {
+                font-size: 0.9rem;
+            }
+            
+            .btn-small {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.8rem;
+            }
+            
+            input, textarea {
+                padding: 0.6rem;
+                font-size: 0.9rem;
+            }
+            
+            textarea {
+                height: 100px;
+            }
+        }
+        
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .events-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: 1.5rem;
+            }
+            
+            .main-content {
+                padding: 1.5rem 20px;
+            }
+        }
+        
+        @media (min-width: 1025px) {
+            .events-grid {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+                gap: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="#" class="logo" onclick="showPage('main')">EventSync</a>
+            <div class="nav-buttons">
+                <a href="#" onclick="showPage('summary')">Event Summary</a>
+                <a href="#" onclick="showPage('create')">Create Event</a>
+            </div>
+            <div class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        <div class="mobile-menu">
+            <a href="#" onclick="showPage('summary'); toggleMobileMenu();">Event Summary</a>
+            <a href="#" onclick="showPage('create'); toggleMobileMenu();">Create Event</a>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <!-- Main Page -->
+        <div id="main-page" class="page active">
+            <h1>All Events</h1>
+            <div id="events-container">
+                <div class="loading">Loading events...</div>
+            </div>
+        </div>
+
+        <!-- Create Event Page -->
+        <div id="create-page" class="page">
+            <div class="form-container">
+                <h2>Create New Event</h2>
+                <form id="createEventForm">
+                    <div class="form-group">
+                        <label for="eventTitle">Event Title:</label>
+                        <input type="text" id="eventTitle" required placeholder="Enter event title">
+                    </div>
+                                <div class="form-group">
+                <label for="eventDescription">Description:</label>
+                <textarea id="eventDescription" required placeholder="Enter event description"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="eventPhoto">Photo (optional):</label>
+                <input type="file" id="eventPhoto" accept="image/*" placeholder="Choose a photo">
+            </div>
+                    <button type="submit" class="btn btn-primary">Create Event</button>
+                </form>
+                <div id="createEventResult" class="result" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Event Summary Page -->
+        <div id="summary-page" class="page">
+            <h1 style="margin: 1rem 0;">Event Summary & Sentiment Analysis</h1>
+            <div class="summary-container">
+                <div class="events-list">
+                    <h3>Events</h3>
+                    <div id="events-list-container">
+                        <div class="loading">Loading events...</div>
+                    </div>
+                </div>
+                <div class="summary-graph">
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: #2c3e50; font-weight: 600;">Sentiment Analysis</h3>
+                    <div id="sentiment-chart-container">
+                        <div class="loading">Select an event to view sentiment analysis</div>
+                    </div>
+                    <div id="sentiment-stats" class="sentiment-stats" style="display: none;">
+                        <div class="stat-card positive">
+                            <div class="stat-number" id="positive-percentage">0%</div>
+                            <div class="stat-label">Positive</div>
+                        </div>
+                        <div class="stat-card neutral">
+                            <div class="stat-number" id="neutral-percentage">0%</div>
+                            <div class="stat-label">Neutral</div>
+                        </div>
+                        <div class="stat-card negative">
+                            <div class="stat-number" id="negative-percentage">0%</div>
+                            <div class="stat-label">Negative</div>
+                        </div>
+                    </div>
+                    <div id="sentiment-counts" class="sentiment-counts" style="display: none;">
+                        <div class="count-card">
+                            <div class="count-number" id="positive-count">0</div>
+                            <div class="count-label">Positive Feedback</div>
+                        </div>
+                        <div class="count-card">
+                            <div class="count-number" id="neutral-count">0</div>
+                            <div class="count-label">Neutral Feedback</div>
+                        </div>
+                        <div class="count-card">
+                            <div class="count-number" id="negative-count">0</div>
+                            <div class="count-label">Negative Feedback</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Modal -->
+        <div id="feedback-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 10px; min-width: 300px; max-width: 90vw; width: 400px;">
+                <h3>Submit Feedback</h3>
+                <form id="feedbackForm">
+                    <div class="form-group">
+                        <label for="feedbackText">Your Feedback:</label>
+                        <textarea id="feedbackText" required placeholder="Enter your feedback"></textarea>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="button" class="btn" onclick="closeFeedbackModal()">Cancel</button>
+                    </div>
+                </form>
+                <div id="feedbackResult" class="result" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+        let currentEventId = null;
+        let allEvents = [];
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const mobileMenu = document.querySelector('.mobile-menu');
+            mobileMenu.classList.toggle('active');
+        }
+
+        // Navigation
+        function showPage(pageName) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageName + '-page').classList.add('active');
+            
+            // Clear any result messages when switching pages
+            const resultElements = document.querySelectorAll('.result');
+            resultElements.forEach(element => {
+                element.style.display = 'none';
+                element.textContent = '';
+            });
+            
+            if (pageName === 'main') {
+                loadEvents();
+            } else if (pageName === 'summary') {
+                loadEventsForSummary();
+                // Clear sentiment analysis results when entering summary page
+                clearSentimentResults();
+            } else {
+                // Clear sentiment analysis results when leaving summary page
+                clearSentimentResults();
+            }
+        }
+
+        // Clear sentiment analysis results
+        function clearSentimentResults() {
+            const chartContainer = document.getElementById('sentiment-chart-container');
+            const statsContainer = document.getElementById('sentiment-stats');
+            const countsContainer = document.getElementById('sentiment-counts');
+            
+            if (chartContainer) {
+                chartContainer.innerHTML = '<div class="loading">Select an event to view sentiment analysis</div>';
+            }
+            if (statsContainer) {
+                statsContainer.style.display = 'none';
+            }
+            if (countsContainer) {
+                countsContainer.style.display = 'none';
+            }
+            
+            // Clear active state from event items
+            document.querySelectorAll('.event-item').forEach(item => item.classList.remove('active'));
+        }
+
+        // Load Events
+        async function loadEvents() {
+            const container = document.getElementById('events-container');
+            container.innerHTML = '<div class="loading">Loading events...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/events`);
+                const events = await response.json();
+                
+                if (events.length === 0) {
+                    container.innerHTML = '<div class="loading">No events found. Create your first event!</div>';
+                    return;
+                }
+                
+                const eventsHTML = events.map(event => `
+                    <div class="event-card">
+                        <div class="event-image">
+                            ${event.photoUrl ? `<img src="/${event.photoUrl}" alt="${event.title}" style="width: 100%; height: 100%; object-fit: cover;">` : '🎉'}
+                        </div>
+                        <div class="event-content">
+                            <div class="event-title">${event.title}</div>
+                            <div class="event-description">${event.description}</div>
+                            <div class="event-actions">
+                                <button class="btn btn-primary btn-small" onclick="openFeedbackModal(${event.id})">Send Feedback</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                container.innerHTML = `<div class="events-grid">${eventsHTML}</div>`;
+            } catch (error) {
+                container.innerHTML = `<div class="loading">Error loading events: ${error.message}</div>`;
+            }
+        }
+
+        // Load Events for Summary Page
+        async function loadEventsForSummary() {
+            const container = document.getElementById('events-list-container');
+            container.innerHTML = '<div class="loading">Loading events...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/events`);
+                allEvents = await response.json();
+                
+                if (allEvents.length === 0) {
+                    container.innerHTML = '<div class="loading">No events found. Create your first event!</div>';
+                    return;
+                }
+                
+                const eventsHTML = allEvents.map(event => `
+                    <div class="event-item" onclick="loadEventSentiment(${event.id})">
+                        <div class="event-item-title">${event.title}</div>
+                        <div class="event-item-date">${new Date(event.createdAt).toLocaleDateString()}</div>
+                    </div>
+                `).join('');
+                
+                container.innerHTML = eventsHTML;
+            } catch (error) {
+                container.innerHTML = `<div class="loading">Error loading events: ${error.message}</div>`;
+            }
+        }
+
+        // Load Event Sentiment Analysis
+        async function loadEventSentiment(eventId) {
+            // Update active event in list
+            document.querySelectorAll('.event-item').forEach(item => item.classList.remove('active'));
+            eventId && document.querySelector(`[onclick="loadEventSentiment(${eventId})"]`).classList.add('active');
+
+            const container = document.getElementById('sentiment-chart-container');
+            container.innerHTML = '<div class="loading">Loading sentiment analysis...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/events/${eventId}/summary`);
+                if (!response.ok) {
+                    throw new Error('Failed to load sentiment data');
+                }
+                
+                const sentimentData = await response.json();
+                
+                // Extract percentages and counts from the sentiment data
+                const percentages = sentimentData.sentimentPercentages || {};
+                const counts = sentimentData.sentimentCounts || {};
+                const chartData = {
+                    positive: percentages.POSITIVE || 0,
+                    neutral: percentages.NEUTRAL || 0,
+                    negative: percentages.NEGATIVE || 0
+                };
+                
+                const countData = {
+                    positive: counts.POSITIVE || 0,
+                    neutral: counts.NEUTRAL || 0,
+                    negative: counts.NEGATIVE || 0
+                };
+                
+                // Update percentage stats
+                document.getElementById('positive-percentage').textContent = `${Math.round(chartData.positive)}%`;
+                document.getElementById('neutral-percentage').textContent = `${Math.round(chartData.neutral)}%`;
+                document.getElementById('negative-percentage').textContent = `${Math.round(chartData.negative)}%`;
+                document.getElementById('sentiment-stats').style.display = 'grid';
+                
+                // Update count stats
+                document.getElementById('positive-count').textContent = countData.positive;
+                document.getElementById('neutral-count').textContent = countData.neutral;
+                document.getElementById('negative-count').textContent = countData.negative;
+                document.getElementById('sentiment-counts').style.display = 'grid';
+                
+                // Create column chart using CSS
+                const maxPercentage = Math.max(chartData.positive, chartData.neutral, chartData.negative);
+                const chartHTML = `
+                    <div style="margin-top: 0.5rem;">
+                        <h4 style="font-size: 1.2rem; color: #2c3e50; margin-bottom: 0.3rem; font-weight: 600;">${sentimentData.eventTitle}</h4>
+                        <p style="color: #7f8c8d; margin-bottom: 1rem; font-size: 0.95rem;">Total Feedbacks: ${sentimentData.totalFeedbacks}</p>
+                        <div style="display: flex; justify-content: space-around; align-items: end; height: 250px; margin: 2rem 0; padding: 0 1rem;">
+                            <div style="display: flex; flex-direction: column; align-items: center; width: 80px;">
+                                <div style="width: 60px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border-radius: 8px 8px 0 0; margin-bottom: 0.5rem; position: relative;">
+                                    <div style="height: ${maxPercentage > 0 ? (chartData.positive / maxPercentage) * 200 : 0}px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem;">
+                                        ${chartData.positive > 0 ? `${Math.round(chartData.positive)}%` : ''}
+                                    </div>
+                                </div>
+                                <span style="font-size: 0.9rem; color: #7f8c8d;">Positive</span>
+                            </div>
+                            <div style="display: flex; flex-direction: column; align-items: center; width: 80px;">
+                                <div style="width: 60px; background: linear-gradient(135deg, #6c757d 0%, #495057 100%); border-radius: 8px 8px 0 0; margin-bottom: 0.5rem; position: relative;">
+                                    <div style="height: ${maxPercentage > 0 ? (chartData.neutral / maxPercentage) * 200 : 0}px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem;">
+                                        ${chartData.neutral > 0 ? `${Math.round(chartData.neutral)}%` : ''}
+                                    </div>
+                                </div>
+                                <span style="font-size: 0.9rem; color: #7f8c8d;">Neutral</span>
+                            </div>
+                            <div style="display: flex; flex-direction: column; align-items: center; width: 80px;">
+                                <div style="width: 60px; background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%); border-radius: 8px 8px 0 0; margin-bottom: 0.5rem; position: relative;">
+                                    <div style="height: ${maxPercentage > 0 ? (chartData.negative / maxPercentage) * 200 : 0}px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem;">
+                                        ${chartData.negative > 0 ? `${Math.round(chartData.negative)}%` : ''}
+                                    </div>
+                                </div>
+                                <span style="font-size: 0.9rem; color: #7f8c8d;">Negative</span>
+                            </div>
+                        </div>
+                        ${sentimentData.dominantSentiment && sentimentData.totalFeedbacks > 0 ? `<p style="margin-top: 1rem; text-align: center; font-weight: bold; color: #2c3e50;">Most commonly shared feedback: <span style="color: ${sentimentData.dominantSentiment === 'POSITIVE' ? '#28a745' : sentimentData.dominantSentiment === 'NEGATIVE' ? '#dc3545' : '#6c757d'}; font-weight: bold;">${sentimentData.dominantSentiment}</span></p>` : ''}
+                    </div>
+                `;
+                
+                container.innerHTML = chartHTML;
+                
+            } catch (error) {
+                container.innerHTML = `<div class="loading">Error loading sentiment analysis: ${error.message}</div>`;
+                document.getElementById('sentiment-stats').style.display = 'none';
+                document.getElementById('sentiment-counts').style.display = 'none';
+            }
+        }
+
+        // Create Event
+        document.getElementById('createEventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('eventTitle').value;
+            const description = document.getElementById('eventDescription').value;
+            const photoFile = document.getElementById('eventPhoto').files[0];
+            
+            try {
+                let response;
+                
+                if (photoFile) {
+                    // Upload with photo
+                    const formData = new FormData();
+                    formData.append('title', title);
+                    formData.append('description', description);
+                    formData.append('photo', photoFile);
+                    
+                    response = await fetch(`${API_BASE}/events/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                } else {
+                    // Upload without photo
+                    response = await fetch(`${API_BASE}/events`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title, description })
+                    });
+                }
+                
+                const result = await response.json();
+                if (response.ok) {
+                    showResult('createEventResult', 'Event created successfully!', true);
+                    document.getElementById('createEventForm').reset();
+                    setTimeout(() => showPage('main'), 800);
+                } else {
+                    const errorText = await response.text();
+                    showResult('createEventResult', `Error: ${errorText}`, false);
+                }
+            } catch (error) {
+                showResult('createEventResult', `Error: ${error.message}`, false);
+            }
+        });
+
+        // Feedback Modal
+        function openFeedbackModal(eventId) {
+            currentEventId = eventId;
+            document.getElementById('feedback-modal').style.display = 'block';
+            document.getElementById('feedbackText').value = '';
+            document.getElementById('feedbackResult').style.display = 'none';
+        }
+
+        function closeFeedbackModal() {
+            document.getElementById('feedback-modal').style.display = 'none';
+            currentEventId = null;
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('feedback-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeFeedbackModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('feedback-modal').style.display === 'block') {
+                closeFeedbackModal();
+            }
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            const mobileMenu = document.querySelector('.mobile-menu');
+            const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+            
+            if (mobileMenu.classList.contains('active') && 
+                !mobileMenu.contains(e.target) && 
+                !mobileMenuToggle.contains(e.target)) {
+                mobileMenu.classList.remove('active');
+            }
+        });
+
+        // Close mobile menu when scrolling
+        let lastScrollTop = 0;
+        document.addEventListener('scroll', function() {
+            const mobileMenu = document.querySelector('.mobile-menu');
+            const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (mobileMenu.classList.contains('active') && currentScrollTop > lastScrollTop) {
+                mobileMenu.classList.remove('active');
+            }
+            
+            lastScrollTop = currentScrollTop;
+        });
+
+        // Submit Feedback
+        document.getElementById('feedbackForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = document.getElementById('feedbackText').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/events/${currentEventId}/feedback`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                
+                if (response.ok) {
+                    showResult('feedbackResult', 'Feedback submitted successfully!', true);
+                    document.getElementById('feedbackText').value = '';
+                    setTimeout(() => closeFeedbackModal(), 800);
+                } else {
+                    const error = await response.text();
+                    showResult('feedbackResult', `Error: ${error}`, false);
+                }
+            } catch (error) {
+                showResult('feedbackResult', `Error: ${error.message}`, false);
+            }
+        });
+
+        function showResult(elementId, message, isSuccess) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+            element.className = `result ${isSuccess ? 'success' : 'error'}`;
+        }
+
+        // Load events on page load
+        window.addEventListener('load', loadEvents);
+    </script>
+</body>
+</html> 
