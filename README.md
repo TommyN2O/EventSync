@@ -29,6 +29,22 @@ A RESTful API built with Spring Boot that manages events and analyzes user feedb
    git clone <repository-url>
    cd demo
    ```
+2. **Update the Hugging Face API Token
+
+This project uses the Hugging Face API for inference, and the API token is configured in `src/main/resources/application.properties`.  
+
+To change the token:  
+
+2.1. Go to [Hugging Face > Access Tokens](https://huggingface.co/settings/tokens) and create a new **Access Token** with *read* permissions.  
+    **Note:** When a token is exposed publicly (e.g., pushed to GitHub), Hugging Face automatically revokes it for security reasons. 
+
+2.2. Open `src/main/resources/application.properties` and update the value for `huggingface.api.token`:  
+
+   ```properties
+   # Hugging Face API Configuration
+   huggingface.api.url=https://api-inference.huggingface.co/models/nlptown/bert-base-multilingual-uncased-sentiment
+   huggingface.api.token=hf_your_new_token_here
+```
 
 3. **Run the application**
    ```bash
